@@ -61,7 +61,7 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="relative section-padding overflow-hidden bg-gradient-to-b from-white via-[#1e3a5f]/5 to-[#1e3a5f]">
+      className="relative section-padding overflow-hidden bg-linear-to-b from-white via-[#1e3a5f]/5 to-[#1e3a5f]">
       {/* Background pattern */}
       <div className="absolute inset-0 grid-pattern opacity-30" />
 
@@ -120,7 +120,7 @@ export default function Contact() {
                 href="mailto:inovasiin.id@gmail.com"
                 whileHover={{ x: 5 }}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:border-[#f97316]/30 transition-all group">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center">
                   <Mail className="w-5 h-5 text-[#f97316]" />
                 </div>
                 <div>
@@ -138,7 +138,7 @@ export default function Contact() {
                 rel="noopener noreferrer"
                 whileHover={{ x: 5 }}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:border-[#f97316]/30 transition-all group">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center">
                   <Phone className="w-5 h-5 text-[#f97316]" />
                 </div>
                 <div>
@@ -153,7 +153,7 @@ export default function Contact() {
               <motion.div
                 whileHover={{ x: 5 }}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center">
                   <MapPin className="w-5 h-5 text-[#f97316]" />
                 </div>
                 <div>
@@ -292,7 +292,7 @@ export default function Contact() {
                 className={`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 transition-all ${
                   isSubmitted
                     ? "bg-green-500 text-white"
-                    : "bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white hover:shadow-lg hover:shadow-orange-500/25"
+                    : "bg-linear-to-r from-[#f97316] to-[#ea580c] text-white hover:shadow-lg hover:shadow-orange-500/25"
                 }`}>
                 {isSubmitted ? (
                   <>

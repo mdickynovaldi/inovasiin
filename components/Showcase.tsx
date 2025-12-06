@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll } from "framer-motion";
 import { TrendingUp, Users, Clock, Award } from "lucide-react";
+import Link from "next/link";
 
 const projects = [
   {
@@ -123,13 +124,15 @@ export default function Showcase() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center mt-12"
         >
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-8 py-3 rounded-full border-2 border-[#f97316] text-[#f97316] font-medium hover:bg-[#f97316] hover:text-white transition-all"
-          >
-            Lihat Semua Project
-          </motion.button>
+          <Link href="/portfolio">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-8 py-3 rounded-full border-2 border-[#f97316] text-[#f97316] font-medium hover:bg-[#f97316] hover:text-white transition-all"
+            >
+              Lihat Semua Project
+            </motion.button>
+          </Link>
         </motion.div>
       </div>
     </section>

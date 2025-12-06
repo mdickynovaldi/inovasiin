@@ -68,7 +68,7 @@ export default function Footer() {
       </div>
 
       {/* Top gradient line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#f97316]/50 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-[#f97316]/50 to-transparent" />
 
       <div className="relative z-10 container-custom">
         {/* Main Footer Content */}
@@ -208,7 +208,7 @@ export default function Footer() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           whileHover={{ y: -5 }}
-          className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white flex items-center justify-center shadow-lg shadow-orange-500/25 z-50"
+          className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] text-white flex items-center justify-center shadow-lg shadow-orange-500/25 z-50"
           aria-label="Back to top">
           <svg
             className="w-5 h-5"
