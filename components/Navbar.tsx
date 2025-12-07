@@ -30,7 +30,9 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      // Show navbar after scrolling past hero section (about 100vh or 300px minimum)
+      const scrollThreshold = isPortfolioPage ? 50 : Math.min(window.innerHeight * 0.5, 400);
+      setIsScrolled(window.scrollY > scrollThreshold);
 
       // Update active section based on scroll position (only on home page)
       if (!isPortfolioPage) {
@@ -51,6 +53,8 @@ export default function Navbar() {
     };
 
     window.addEventListener("scroll", handleScroll);
+    // Initial check
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isPortfolioPage]);
 
@@ -84,12 +88,18 @@ export default function Navbar() {
   // For portfolio detail pages, use a subtle glass background even when not scrolled for better readability
   const useSubtleBackground = isPortfolioDetailPage && !isScrolled;
 
+  // Hide navbar on home page when at top
+  const isHidden = !isPortfolioPage && !isScrolled;
+
   return (
     <>
       <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ 
+          y: isHidden ? -100 : 0, 
+          opacity: isHidden ? 0 : 1 
+        }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           isScrolled
