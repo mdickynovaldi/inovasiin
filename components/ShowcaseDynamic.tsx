@@ -94,7 +94,7 @@ export default function ShowcaseDynamic() {
   const [portfolios, setPortfolios] = useState<PortfolioWithRelations[]>([])
   const [loading, setLoading] = useState(true)
   const { scrollYProgress } = useScroll({
-    target: containerRef,
+    target: loading ? undefined : containerRef,
     offset: ['start end', 'end start'],
   })
 

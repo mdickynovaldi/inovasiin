@@ -55,7 +55,7 @@ export interface PortfolioTestimonial {
   role: string
 }
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       portfolios: {
@@ -89,6 +89,10 @@ export interface Database {
         Update: Partial<Omit<PortfolioTestimonial, 'id'>>
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }
 

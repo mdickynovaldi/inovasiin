@@ -46,9 +46,9 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body
+        suppressHydrationWarning={true}
         className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased`}
-        style={{ fontFamily: "var(--font-space-grotesk), sans-serif" }}
-      >
+        style={{ fontFamily: "var(--font-space-grotesk), sans-serif" }}>
         {children}
       </body>
     </html>

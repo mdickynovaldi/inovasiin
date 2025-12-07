@@ -78,7 +78,7 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true);
 
   const { scrollYProgress } = useScroll({
-    target: heroRef,
+    target: loading ? undefined : heroRef,
     offset: ["start start", "end start"],
   });
 
