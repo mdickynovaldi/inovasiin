@@ -1,59 +1,108 @@
 'use client'
 
-import { ADMIN_EMAIL, ADMIN_PASSWORD } from './supabase'
-
-const AUTH_KEY = 'inovasiin_admin_auth'
+import { supabase } from './supabase'
+import { User, Session } from '@supabase/supabase-js'
 
 export interface AuthState {
   isAuthenticated: boolean
-  email: string | null
-  loginTime: number | null
+  user: User | null
+  session: Session | null
 }
 
-export function login(email: string, password: string): { success: boolean; error?: string } {
-  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    const authState: AuthState = {
-      isAuthenticated: true,
-      email: email,
-      loginTime: Date.now(),
-    }
-    localStorage.setItem(AUTH_KEY, JSON.stringify(authState))
-    return { success: true }
-  }
-  return { success: false, error: 'Email atau password salah' }
-}
-
-export function logout(): void {
-  localStorage.removeItem(AUTH_KEY)
-}
-
-export function getAuthState(): AuthState {
-  if (typeof window === 'undefined') {
-    return { isAuthenticated: false, email: null, loginTime: null }
-  }
-  
-  const stored = localStorage.getItem(AUTH_KEY)
-  if (!stored) {
-    return { isAuthenticated: false, email: null, loginTime: null }
-  }
-  
+// Login dengan Supabase Auth
+export async function login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const authState: AuthState = JSON.parse(stored)
-    
-    // Session expires after 24 hours
-    const SESSION_DURATION = 24 * 60 * 60 * 1000
-    if (authState.loginTime && Date.now() - authState.loginTime > SESSION_DURATION) {
-      logout()
-      return { isAuthenticated: false, email: null, loginTime: null }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
     }
-    
-    return authState
-  } catch {
-    return { isAuthenticated: false, email: null, loginTime: null }
+
+    if (data.session) {
+      return { success: true }
+    }
+
+    return { success: false, error: 'Login gagal' }
+  } catch (error) {
+    console.error('Login error:', error)
+    return { success: false, error: 'Terjadi kesalahan saat login' }
   }
 }
 
-export function isAuthenticated(): boolean {
-  return getAuthState().isAuthenticated
+// Logout dari Supabase Auth
+export async function logout(): Promise<void> {
+  await supabase.auth.signOut()
 }
 
+// Get current auth state
+export async function getAuthState(): Promise<AuthState> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (session) {
+      return {
+        isAuthenticated: true,
+        user: session.user,
+        session: session,
+      }
+    }
+
+    return { isAuthenticated: false, user: null, session: null }
+  } catch (error) {
+    console.error('Get auth state error:', error)
+    return { isAuthenticated: false, user: null, session: null }
+  }
+}
+
+// Check if user is authenticated (synchronous check using cached session)
+export function isAuthenticated(): boolean {
+  // This is a sync function, we need to check localStorage for cached session
+  if (typeof window === 'undefined') {
+    return false
+  }
+  
+  // Supabase stores session in localStorage with key pattern
+  const storedSession = localStorage.getItem('sb-' + process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '').split('.')[0] + '-auth-token')
+  
+  if (storedSession) {
+    try {
+      const session = JSON.parse(storedSession)
+      // Check if session is expired
+      if (session.expires_at && new Date(session.expires_at * 1000) > new Date()) {
+        return true
+      }
+    } catch {
+      return false
+    }
+  }
+  
+  return false
+}
+
+// Subscribe to auth state changes
+export function onAuthStateChange(callback: (state: AuthState) => void) {
+  return supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      callback({
+        isAuthenticated: true,
+        user: session.user,
+        session: session,
+      })
+    } else {
+      callback({
+        isAuthenticated: false,
+        user: null,
+        session: null,
+      })
+    }
+  })
+}
+
+// Get current user
+export async function getCurrentUser(): Promise<User | null> {
+  const { data: { user } } = await supabase.auth.getUser()
+  return user
+}

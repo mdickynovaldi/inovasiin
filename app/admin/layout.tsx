@@ -15,7 +15,7 @@ import {
   Home
 } from 'lucide-react'
 import Link from 'next/link'
-import { isAuthenticated, logout, getAuthState } from '@/lib/auth'
+import { logout, getAuthState, onAuthStateChange, AuthState } from '@/lib/auth'
 
 const navItems = [
   { href: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
@@ -28,24 +28,48 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [authState, setAuthState] = useState({ isAuthenticated: false, email: null as string | null })
+  const [authState, setAuthState] = useState<AuthState>({ 
+    isAuthenticated: false, 
+    user: null, 
+    session: null 
+  })
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     setMounted(true)
-    const state = getAuthState()
-    if (!state.isAuthenticated) {
-      router.push('/login')
-    } else {
-      setAuthState({ isAuthenticated: true, email: state.email })
+    
+    // Check initial auth state
+    const checkAuth = async () => {
+      const state = await getAuthState()
+      if (!state.isAuthenticated) {
+        router.push('/login')
+      } else {
+        setAuthState(state)
+      }
+      setIsLoading(false)
+    }
+    
+    checkAuth()
+    
+    // Subscribe to auth state changes
+    const { data: { subscription } } = onAuthStateChange((state) => {
+      setAuthState(state)
+      if (!state.isAuthenticated) {
+        router.push('/login')
+      }
+    })
+    
+    return () => {
+      subscription.unsubscribe()
     }
   }, [router])
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     router.push('/login')
   }
 
-  if (!mounted || !authState.isAuthenticated) {
+  if (!mounted || isLoading || !authState.isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center gap-4">
@@ -148,11 +172,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="px-4 py-4 border-t border-gray-100 bg-gray-50/50">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#0f2847] flex items-center justify-center">
-                <span className="text-white font-semibold text-sm">A</span>
+                <span className="text-white font-semibold text-sm">
+                  {authState.user?.email?.charAt(0).toUpperCase() || 'A'}
+                </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-[#1e3a5f] truncate">Admin</p>
-                <p className="text-xs text-[#1e3a5f]/50 truncate">{authState.email}</p>
+                <p className="text-xs text-[#1e3a5f]/50 truncate">{authState.user?.email}</p>
               </div>
             </div>
           </div>
@@ -202,4 +228,3 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </div>
   )
 }
-
