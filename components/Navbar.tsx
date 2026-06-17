@@ -144,7 +144,7 @@ export default function Navbar() {
                       className={cn(
                         "relative text-sm font-medium transition-colors cursor-pointer",
                         isActive
-                          ? "text-[#f97316]"
+                          ? "text-[#c2410c]"
                           : useLightText
                           ? "text-white/70 hover:text-white"
                           : "text-[#1e3a5f]/70 hover:text-[#1e3a5f]"
@@ -176,7 +176,7 @@ export default function Navbar() {
                   className={cn(
                     "relative text-sm font-medium transition-colors",
                     isActive
-                      ? "text-[#f97316]"
+                      ? "text-[#c2410c]"
                       : useLightText
                       ? "text-white/70 hover:text-white"
                       : "text-[#1e3a5f]/70 hover:text-[#1e3a5f]"
@@ -268,7 +268,7 @@ export default function Navbar() {
                           transition={{ delay: 0.1 + index * 0.05 }}
                           className={cn(
                             "block text-2xl font-medium py-3 border-b border-[#1e3a5f]/10 transition-colors",
-                            isActive ? "text-[#f97316]" : "text-[#1e3a5f]"
+                            isActive ? "text-[#c2410c]" : "text-[#1e3a5f]"
                           )}>
                           {link.label}
                         </motion.span>
@@ -286,7 +286,7 @@ export default function Navbar() {
                       transition={{ delay: 0.1 + index * 0.05 }}
                       className={cn(
                         "text-2xl font-medium py-3 border-b border-[#1e3a5f]/10 transition-colors",
-                        isActive ? "text-[#f97316]" : "text-[#1e3a5f]"
+                        isActive ? "text-[#c2410c]" : "text-[#1e3a5f]"
                       )}>
                       {link.label}
                     </motion.a>

@@ -36,8 +36,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
-    
+
     // Check initial auth state
     const checkAuth = async () => {
       const state = await getAuthState()

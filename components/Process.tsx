@@ -2,6 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Search, Pencil, Code, FlaskConical, Rocket } from "lucide-react";
+import SectionView from "@/components/three/SectionView";
+import ProcessScene from "@/components/three/scenes/ProcessScene";
+import SceneFallback from "@/components/three/fallbacks/SceneFallback";
+import { SECTION } from "@/components/three/sceneStore";
+import { useSectionScroll } from "@/components/three/hooks/useSectionScroll";
 
 const steps = [
   {
@@ -47,10 +52,22 @@ const steps = [
 ];
 
 export default function Process() {
+  const sectionRef = useSectionScroll<HTMLElement>(SECTION.process);
+
   return (
-    <section id="process" className="relative section-padding overflow-hidden bg-gradient-to-b from-white via-[#1e3a5f]/5 to-white">
+    <section
+      ref={sectionRef}
+      id="process"
+      className="relative section-padding overflow-hidden bg-gradient-to-b from-white via-[#1e3a5f]/5 to-white">
       {/* Background pattern */}
       <div className="absolute inset-0 grid-pattern opacity-30" />
+
+      {/* 3D scene layer — behind the step content (Canvas renders at z-5). */}
+      <SectionView
+        className="scene-view absolute inset-0"
+        fallback={<SceneFallback variant="subtle" />}>
+        <ProcessScene />
+      </SectionView>
 
       <div className="relative z-10 container-custom">
         {/* Section Header */}
@@ -73,7 +90,7 @@ export default function Process() {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
             Proses Kerja <span className="gradient-text">Kami</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-[#1e3a5f]/60 text-lg">
+          <p className="max-w-2xl mx-auto text-[#475569] text-lg">
             Pendekatan sistematis untuk mengubah ide Anda menjadi produk digital yang sukses
           </p>
         </motion.div>
@@ -108,17 +125,17 @@ export default function Process() {
 
                     {/* Icon */}
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center mb-4 group-hover:from-[#f97316]/20 group-hover:to-[#1e3a5f]/20 transition-all">
-                      <step.icon className="w-6 h-6 text-[#f97316]" />
+                      <step.icon className="w-6 h-6 text-[#c2410c]" />
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xl font-bold text-[#1e3a5f] mb-1 group-hover:text-[#f97316] transition-colors">
+                    <h3 className="text-xl font-bold text-[#1e3a5f] mb-1 group-hover:text-[#c2410c] transition-colors">
                       {step.title}
                     </h3>
-                    <p className="text-sm text-[#f97316] mb-3">{step.subtitle}</p>
+                    <p className="text-sm text-[#c2410c] mb-3">{step.subtitle}</p>
 
                     {/* Description */}
-                    <p className="text-sm text-[#1e3a5f]/60 leading-relaxed">
+                    <p className="text-sm text-[#475569] leading-relaxed">
                       {step.description}
                     </p>
                   </motion.div>
@@ -151,7 +168,7 @@ export default function Process() {
                         /{step.number}
                       </span>
                       <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-lg bg-gradient-to-br from-[#f97316]/20 to-[#1e3a5f]/20 flex items-center justify-center">
-                        <step.icon className="w-5 h-5 text-[#f97316]" />
+                        <step.icon className="w-5 h-5 text-[#c2410c]" />
                       </div>
                     </div>
                   </div>
@@ -161,8 +178,8 @@ export default function Process() {
                     <h3 className="text-xl font-bold text-[#1e3a5f] mb-1">
                       {step.title}
                     </h3>
-                    <p className="text-sm text-[#f97316] mb-2">{step.subtitle}</p>
-                    <p className="text-sm text-[#1e3a5f]/60 leading-relaxed">
+                    <p className="text-sm text-[#c2410c] mb-2">{step.subtitle}</p>
+                    <p className="text-sm text-[#475569] leading-relaxed">
                       {step.description}
                     </p>
                   </div>

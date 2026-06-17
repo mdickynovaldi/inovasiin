@@ -92,8 +92,8 @@ export default function LoadingScreen({ onLoadingComplete, minLoadTime = 2500 }:
         
         setTimeout(() => {
           setIsExiting(true);
-          setTimeout(onLoadingComplete, 800);
-        }, 400);
+          setTimeout(onLoadingComplete, 500);
+        }, 200);
       } else {
         requestAnimationFrame(checkLoaded);
       }

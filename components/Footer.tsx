@@ -1,13 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Instagram,
-  Linkedin,
-  Twitter,
-  Youtube,
-  ArrowUpRight,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { Instagram, Linkedin, Twitter, Youtube } from "./icons/BrandIcons";
 import Image from "next/image";
 
 const footerLinks = {
@@ -183,19 +178,19 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-white/70">
               © {new Date().getFullYear()} PT INOVASIIN SMART SOLUTION. All
               rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <a
                 href="#"
-                className="text-sm text-white/40 hover:text-white/70 transition-colors">
+                className="text-sm text-white/70 hover:text-white transition-colors">
                 Privacy Policy
               </a>
               <a
                 href="#"
-                className="text-sm text-white/40 hover:text-white/70 transition-colors">
+                className="text-sm text-white/70 hover:text-white transition-colors">
                 Terms of Service
               </a>
             </div>

@@ -73,6 +73,7 @@ export default function ActivityLog() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setActivities(parsed.map((a: any) => ({ ...a, timestamp: new Date(a.timestamp) })))
       } catch {}
     }

@@ -119,9 +119,20 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* The page background lives on <html> (not <body>) so the fixed 3D canvas,
+     which is a descendant of <body>, paints ABOVE the page backdrop instead of
+     being hidden behind the body's own background. */
+  html {
+    @apply bg-background;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: transparent;
     scroll-behavior: smooth;
+    /* Clip horizontal overflow here (not on inner wrappers) so it never breaks
+       `position: sticky` or occludes the fixed 3D canvas. `clip` (unlike
+       `hidden`) does not create a scroll container, so sticky keeps working. */
+    overflow-x: clip;
   }
 
   /* Custom scrollbar */
@@ -141,6 +152,23 @@
   ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #ea580c, #0f2847);
   }
+}
+
+/* 3D scene layer (hybrid R3F <View> system) */
+.scene-root {
+  position: relative;
+}
+
+/* The shared fixed Canvas. z-index keeps 3D above section backgrounds but
+   below foreground content (which uses z-10+). Inline styles set position. */
+.scene-canvas {
+  pointer-events: none;
+}
+
+/* A <SectionView> renders a positioned DOM box; this helper fills its parent. */
+.scene-view {
+  position: absolute;
+  inset: 0;
 }
 
 /* Glassmorphism utility classes - Light version */

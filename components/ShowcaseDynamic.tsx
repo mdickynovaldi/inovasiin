@@ -6,6 +6,10 @@ import { TrendingUp, Users, Clock, Award, Eye, Heart, Star, Zap, Target, CheckCi
 import Link from 'next/link'
 import { getFeaturedPortfolios } from '@/lib/portfolioService'
 import { PortfolioWithRelations } from '@/types/database'
+import SectionView from '@/components/three/SectionView'
+import ShowcaseAccentScene from '@/components/three/scenes/ShowcaseAccentScene'
+import SceneFallback from '@/components/three/fallbacks/SceneFallback'
+import { SECTION, setSectionProgress } from '@/components/three/sceneStore'
 
 // Icon mapping
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
@@ -107,6 +111,16 @@ export default function ShowcaseDynamic() {
     loadPortfolios()
   }, [])
 
+  // Publish this section's scroll progress to the scene store so the in-canvas
+  // 3D backdrop can read it each frame via getSectionProgress(SECTION.showcase).
+  useEffect(() => {
+    setSectionProgress(SECTION.showcase, scrollYProgress.get())
+    const unsub = scrollYProgress.on('change', (v) =>
+      setSectionProgress(SECTION.showcase, v)
+    )
+    return () => unsub()
+  }, [scrollYProgress])
+
   // Use static data if no portfolios from Supabase
   const hasSupabaseData = portfolios.length > 0
 
@@ -120,6 +134,15 @@ export default function ShowcaseDynamic() {
       <div className="absolute inset-0 grid-pattern opacity-30" />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#f97316]/5 blur-[150px]" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-[#1e3a5f]/5 blur-[150px]" />
+
+      {/* 3D accent backdrop (renders into the shared Canvas at z-5; sits behind
+          the z-10 content). CSS fallback on the "off" quality tier. */}
+      <SectionView
+        className="scene-view absolute inset-0"
+        fallback={<SceneFallback variant="subtle" />}
+      >
+        <ShowcaseAccentScene />
+      </SectionView>
 
       <div className="relative z-10 container-custom">
         {/* Section Header */}
@@ -135,14 +158,14 @@ export default function ShowcaseDynamic() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#f97316] font-medium mb-4"
+            className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-medium mb-4"
           >
             {hasSupabaseData ? 'Featured Projects' : 'Selected Projects'}
           </motion.span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
             Project <span className="gradient-text">Showcase</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-[#1e3a5f]/60 text-lg">
+          <p className="max-w-2xl mx-auto text-[#475569] text-lg">
             {hasSupabaseData 
               ? 'Proyek unggulan yang menunjukkan kemampuan kami dalam menghadirkan solusi digital yang berdampak'
               : 'Beberapa project yang menunjukkan kemampuan kami dalam menghadirkan solusi digital yang berdampak'}
@@ -203,7 +226,7 @@ export default function ShowcaseDynamic() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="px-8 py-3 rounded-full border-2 border-[#f97316] text-[#f97316] font-medium hover:bg-[#f97316] hover:text-white transition-all"
+              className="px-8 py-3 rounded-full border-2 border-[#f97316] text-[#c2410c] font-medium hover:bg-[#f97316] hover:text-white transition-all"
             >
               Lihat Semua Project
             </motion.button>
@@ -247,7 +270,7 @@ function ProjectCardDynamic({
             {!portfolio.thumbnail_url && (
               <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`}>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-6xl font-bold text-white/20">{portfolio.title.charAt(0)}</span>
+                  <span className="text-6xl font-bold text-white/70">{portfolio.title.charAt(0)}</span>
                 </div>
               </div>
             )}
@@ -276,15 +299,15 @@ function ProjectCardDynamic({
           {/* Content */}
           <div className="p-6">
             {/* Industry */}
-            <p className="text-sm text-[#f97316] font-medium mb-2">{portfolio.industry}</p>
+            <p className="text-sm text-[#c2410c] font-medium mb-2">{portfolio.industry}</p>
 
             {/* Title */}
-            <h3 className="text-xl font-bold text-[#1e3a5f] mb-3 group-hover:text-[#f97316] transition-colors">
+            <h3 className="text-xl font-bold text-[#1e3a5f] mb-3 group-hover:text-[#c2410c] transition-colors">
               {portfolio.title}
             </h3>
 
             {/* Description */}
-            <p className="text-[#1e3a5f]/60 text-sm leading-relaxed mb-4 line-clamp-2">
+            <p className="text-[#475569] text-sm leading-relaxed mb-4 line-clamp-2">
               {portfolio.subtitle || portfolio.description?.replace(/<[^>]*>/g, '').slice(0, 150)}
             </p>
 
@@ -295,10 +318,10 @@ function ProjectCardDynamic({
                   const IconComponent = iconMap[stat.icon] || TrendingUp
                   return (
                     <div key={stat.id} className="flex items-center gap-2">
-                      <IconComponent className="w-4 h-4 text-[#f97316]" />
+                      <IconComponent className="w-4 h-4 text-[#c2410c]" />
                       <div>
                         <p className="text-lg font-bold text-[#1e3a5f]">{stat.value}</p>
-                        <p className="text-xs text-[#1e3a5f]/50">{stat.label}</p>
+                        <p className="text-xs text-[#64748b]">{stat.label}</p>
                       </div>
                     </div>
                   )
@@ -312,7 +335,7 @@ function ProjectCardDynamic({
                 {portfolio.tags.slice(0, 3).map((tag) => (
                   <span
                     key={tag.id}
-                    className="px-2 py-1 rounded-md bg-[#1e3a5f]/5 text-xs text-[#1e3a5f]/70"
+                    className="px-2 py-1 rounded-md bg-[#1e3a5f]/5 text-xs text-[#475569]"
                   >
                     {tag.name}
                   </span>
@@ -356,21 +379,21 @@ function ProjectCardStatic({
 
         {/* Content */}
         <div className="p-6">
-          <p className="text-sm text-[#f97316] font-medium mb-2">{project.industry}</p>
-          <h3 className="text-xl font-bold text-[#1e3a5f] mb-3 group-hover:text-[#f97316] transition-colors">
+          <p className="text-sm text-[#c2410c] font-medium mb-2">{project.industry}</p>
+          <h3 className="text-xl font-bold text-[#1e3a5f] mb-3 group-hover:text-[#c2410c] transition-colors">
             {project.title}
           </h3>
-          <p className="text-[#1e3a5f]/60 text-sm leading-relaxed mb-4">
+          <p className="text-[#475569] text-sm leading-relaxed mb-4">
             {project.description}
           </p>
 
           <div className="flex gap-6 mb-4">
             {project.stats.map((stat) => (
               <div key={stat.label} className="flex items-center gap-2">
-                <stat.icon className="w-4 h-4 text-[#f97316]" />
+                <stat.icon className="w-4 h-4 text-[#c2410c]" />
                 <div>
                   <p className="text-lg font-bold text-[#1e3a5f]">{stat.value}</p>
-                  <p className="text-xs text-[#1e3a5f]/50">{stat.label}</p>
+                  <p className="text-xs text-[#64748b]">{stat.label}</p>
                 </div>
               </div>
             ))}
@@ -380,7 +403,7 @@ function ProjectCardStatic({
             {project.tags.map((tag) => (
               <span
                 key={tag}
-                className="px-2 py-1 rounded-md bg-[#1e3a5f]/5 text-xs text-[#1e3a5f]/70"
+                className="px-2 py-1 rounded-md bg-[#1e3a5f]/5 text-xs text-[#475569]"
               >
                 {tag}
               </span>

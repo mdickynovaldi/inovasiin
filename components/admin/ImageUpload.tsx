@@ -70,6 +70,7 @@ export default function ImageUpload({
         .getPublicUrl(data.path)
 
       onUpload(publicUrl)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Upload error:', err)
       setError(err.message || 'Gagal mengupload gambar')

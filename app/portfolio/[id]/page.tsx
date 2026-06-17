@@ -33,6 +33,11 @@ import { getPortfolioById, getAllPortfolios } from "@/lib/portfolioService";
 import { PortfolioWithRelations } from "@/types/database";
 import YouTube from "react-youtube";
 import Image from "next/image";
+import SceneProvider from "@/components/three/SceneProvider";
+import SectionView from "@/components/three/SectionView";
+import PortfolioHeroScene from "@/components/three/scenes/PortfolioHeroScene";
+import SceneFallback from "@/components/three/fallbacks/SceneFallback";
+import { SECTION, setSectionProgress } from "@/components/three/sceneStore";
 
 // Icon mapping
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } =
@@ -61,6 +66,18 @@ function getCategoryGradient(category: string): string {
   return gradients[category] || "from-[#1e3a5f] to-[#0f2847]";
 }
 
+// Solid accent color (for the 3D hero scene) derived from category — orange fallback.
+function getCategoryAccent(category: string): string {
+  const accents: { [key: string]: string } = {
+    "Virtual Reality": "#f97316",
+    "Augmented Reality": "#fb923c",
+    "Web Development": "#0ea5e9",
+    "3D Modeling": "#a855f7",
+    "Motion Graphics": "#1e3a5f",
+  };
+  return accents[category] || "#f97316";
+}
+
 export default function PortfolioDetailPage() {
   const params = useParams();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -86,6 +103,15 @@ export default function PortfolioDetailPage() {
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.05]);
+
+  // Publish hero scroll progress to the 3D scene (PortfolioHeroScene reads it).
+  useEffect(() => {
+    setSectionProgress(SECTION.portfolioHero, scrollYProgress.get());
+    const unsub = scrollYProgress.on("change", (v) =>
+      setSectionProgress(SECTION.portfolioHero, v)
+    );
+    return () => unsub();
+  }, [scrollYProgress]);
 
   useEffect(() => {
     async function loadData() {
@@ -129,8 +155,8 @@ export default function PortfolioDetailPage() {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#f97316] mx-auto mb-4" />
-          <p className="text-[#1e3a5f]/60">Memuat portfolio...</p>
+          <Loader2 className="w-12 h-12 animate-spin text-[#c2410c] mx-auto mb-4" />
+          <p className="text-[#475569]">Memuat portfolio...</p>
         </div>
       </main>
     );
@@ -144,7 +170,7 @@ export default function PortfolioDetailPage() {
           <h1 className="text-4xl font-bold text-[#1e3a5f] mb-4">
             Portfolio Tidak Ditemukan
           </h1>
-          <p className="text-[#1e3a5f]/60 mb-6">
+          <p className="text-[#475569] mb-6">
             {error || "Portfolio yang Anda cari tidak ada."}
           </p>
           <Link href="/portfolio">
@@ -162,6 +188,7 @@ export default function PortfolioDetailPage() {
   }
 
   const gradient = getCategoryGradient(portfolio.category);
+  const accentColor = getCategoryAccent(portfolio.category);
 
   // Animation variants
   const containerVariants = {
@@ -197,85 +224,47 @@ export default function PortfolioDetailPage() {
   };
 
   return (
-    <main className="relative overflow-hidden bg-white" ref={containerRef}>
+    <SceneProvider>
+      <main className="relative overflow-hidden bg-white" ref={containerRef}>
       <Navbar />
 
-      {/* Hero Section */}
+      {/* Hero Section — light brand theme with 3D glass product shot */}
       <section
         ref={heroRef}
-        className="relative min-h-[80vh] flex items-end overflow-hidden">
-        {/* Background with Parallax */}
+        className="relative min-h-[80vh] flex items-end overflow-hidden bg-gradient-to-b from-white via-[#f8fafc] to-white">
+        {/* Soft brand background decorations (below the 3D canvas at z-5) */}
         <motion.div
           style={{ y: heroY, scale: heroScale }}
-          className="absolute inset-0 z-0">
-          {/* Image or Gradient Background */}
-          {portfolio.thumbnail_url ? (
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${portfolio.thumbnail_url})` }}>
-              <div className="absolute inset-0 bg-black/50" />
-            </div>
-          ) : (
-            <div className={`absolute inset-0 bg-linear-to-br ${gradient}`} />
-          )}
-
-          {/* Animated Pattern */}
-          <motion.div
-            animate={{
-              backgroundPosition: ["0% 0%", "100% 100%"],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              repeatType: "reverse",
-            }}
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-              backgroundSize: "40px 40px",
-            }}
-          />
-
-          {/* Floating Shapes */}
-          <motion.div
-            animate={{
-              rotate: 360,
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              rotate: { duration: 30, repeat: Infinity, ease: "linear" },
-              scale: { duration: 5, repeat: Infinity, ease: "easeInOut" },
-            }}
-            className="absolute top-20 right-[15%] w-64 h-64 border border-white/20 rounded-3xl"
-          />
-
-          {/* Glowing Orbs */}
-          <motion.div
-            animate={{
-              x: [0, 30, 0],
-              y: [0, -20, 0],
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-white/10 blur-[100px]"
-          />
-
-          {/* Dark Overlay */}
-          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
+          className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute inset-0 grid-pattern opacity-50" />
+          <div className="absolute top-1/4 right-1/4 w-[28rem] h-[28rem] rounded-full bg-[#f97316]/10 blur-[120px]" />
+          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 rounded-full bg-[#1e3a5f]/10 blur-[120px]" />
         </motion.div>
 
-        {/* Hero Content */}
+        {/* 3D glass product shot (desktop) / animated fallback (mobile) */}
+        <SectionView
+          className="scene-view"
+          fallback={<SceneFallback variant="hero" />}
+          camera={{ position: [0, 0, 6], fov: 45 }}>
+          <PortfolioHeroScene
+            thumbnail={portfolio.thumbnail_url}
+            accent={accentColor}
+          />
+        </SectionView>
+
+        {/* Hero Content — navy text overlay on the light hero */}
         <motion.div
           style={{ opacity: heroOpacity }}
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="relative z-10 container-custom pb-20 pt-40">
+          className="relative z-10 container-custom pb-20 pt-40 pointer-events-none">
           {/* Back Button */}
-          <motion.div variants={itemVariants} className="mb-8">
+          <motion.div variants={itemVariants} className="mb-8 pointer-events-auto">
             <Link href="/portfolio">
               <motion.button
                 whileHover={{ x: -5 }}
-                className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors">
+                className="inline-flex items-center gap-2 text-[#475569] hover:text-[#c2410c] transition-colors">
                 <ArrowLeft className="w-5 h-5" />
                 <span className="font-medium">Kembali ke Portfolio</span>
               </motion.button>
@@ -286,23 +275,23 @@ export default function PortfolioDetailPage() {
           <motion.div
             variants={itemVariants}
             className="flex flex-wrap gap-3 mb-6">
-            <span className="px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-sm text-white font-medium">
+            <span className="px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-semibold">
               {portfolio.category}
             </span>
             {portfolio.year && (
-              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-sm text-white/90">
+              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 text-sm text-[#475569]">
                 <Calendar className="w-4 h-4" />
                 {portfolio.year}
               </span>
             )}
             {portfolio.duration && (
-              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-sm text-white/90">
+              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 text-sm text-[#475569]">
                 <Clock className="w-4 h-4" />
                 {portfolio.duration}
               </span>
             )}
             {portfolio.is_featured && (
-              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-yellow-400 text-yellow-900 text-sm font-semibold">
+              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white text-sm font-semibold shadow-lg shadow-orange-500/25">
                 <Star className="w-4 h-4" />
                 Featured
               </span>
@@ -312,7 +301,7 @@ export default function PortfolioDetailPage() {
           {/* Title */}
           <motion.h1
             variants={itemVariants}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 max-w-4xl leading-tight">
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#1e3a5f] mb-6 max-w-4xl leading-tight">
             {portfolio.title}
           </motion.h1>
 
@@ -320,8 +309,8 @@ export default function PortfolioDetailPage() {
           {portfolio.industry && (
             <motion.p
               variants={itemVariants}
-              className="text-xl sm:text-2xl text-white/80 mb-8 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#f97316]" />
+              className="text-xl sm:text-2xl text-[#475569] mb-8 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#c2410c]" />
               {portfolio.industry}
             </motion.p>
           )}
@@ -331,12 +320,12 @@ export default function PortfolioDetailPage() {
             <motion.div
               variants={itemVariants}
               className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#2d4a6f] flex items-center justify-center shadow-md">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-white/60 text-sm">Client</p>
-                <p className="text-white font-semibold">{portfolio.client}</p>
+                <p className="text-[#64748b] text-sm">Client</p>
+                <p className="text-[#1e3a5f] font-semibold">{portfolio.client}</p>
               </div>
             </motion.div>
           )}
@@ -347,11 +336,11 @@ export default function PortfolioDetailPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
           <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="w-6 h-10 rounded-full border-2 border-white/40 flex justify-center pt-2">
+            className="w-6 h-10 rounded-full border-2 border-[#1e3a5f]/30 flex justify-center pt-2">
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{
@@ -359,7 +348,7 @@ export default function PortfolioDetailPage() {
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-              className="w-1.5 h-1.5 rounded-full bg-white"
+              className="w-1.5 h-1.5 rounded-full bg-[#f97316]"
             />
           </motion.div>
         </motion.div>
@@ -394,7 +383,7 @@ export default function PortfolioDetailPage() {
                         <p className="text-3xl font-bold text-[#1e3a5f]">
                           {stat.value}
                         </p>
-                        <p className="text-[#1e3a5f]/60 text-sm">
+                        <p className="text-[#475569] text-sm">
                           {stat.label}
                         </p>
                       </div>
@@ -419,7 +408,7 @@ export default function PortfolioDetailPage() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}>
-              <span className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#f97316] font-medium mb-6">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-medium mb-6">
                 Project Overview
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-[#1e3a5f] mb-6">
@@ -427,11 +416,11 @@ export default function PortfolioDetailPage() {
               </h2>
               {portfolio.description ? (
                 <div
-                  className="text-lg text-[#1e3a5f]/70 leading-relaxed mb-8 prose prose-lg max-w-none"
+                  className="text-lg text-[#475569] leading-relaxed mb-8 prose prose-lg max-w-none"
                   dangerouslySetInnerHTML={{ __html: portfolio.description }}
                 />
               ) : portfolio.subtitle ? (
-                <p className="text-lg text-[#1e3a5f]/70 leading-relaxed mb-8">
+                <p className="text-lg text-[#475569] leading-relaxed mb-8">
                   {portfolio.subtitle}
                 </p>
               ) : null}
@@ -522,12 +511,12 @@ export default function PortfolioDetailPage() {
                   </>
                 ) : (
                   /* Gradient placeholder */
-                  <div className={`absolute inset-0 bg-linear-to-br{gradient}`}>
+                  <div className={`absolute inset-0 bg-linear-to-br ${gradient}`}>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <motion.div
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 3, repeat: Infinity }}
-                        className="text-white/30 text-9xl font-bold">
+                        className="text-white/70 text-9xl font-bold">
                         {portfolio.title.charAt(0)}
                       </motion.div>
                     </div>
@@ -673,7 +662,7 @@ export default function PortfolioDetailPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
               className="text-center mb-12">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#f97316] font-medium mb-4">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-medium mb-4">
                 Tech Stack
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-[#1e3a5f]">
@@ -697,8 +686,8 @@ export default function PortfolioDetailPage() {
                   whileHover={{ scale: 1.1, y: -5 }}
                   className="group relative">
                   <div className="px-6 py-3 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-lg hover:border-[#f97316]/30 transition-all flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-[#f97316]" />
-                    <span className="font-medium text-[#1e3a5f] group-hover:text-[#f97316] transition-colors">
+                    <Layers className="w-4 h-4 text-[#c2410c]" />
+                    <span className="font-medium text-[#1e3a5f] group-hover:text-[#c2410c] transition-colors">
                       {tech.name}
                     </span>
                   </div>
@@ -756,7 +745,7 @@ export default function PortfolioDetailPage() {
                     <p className="font-bold text-[#1e3a5f]">
                       {portfolio.testimonial.author}
                     </p>
-                    <p className="text-[#1e3a5f]/60 text-sm">
+                    <p className="text-[#475569] text-sm">
                       {portfolio.testimonial.role}
                     </p>
                   </div>
@@ -800,7 +789,7 @@ export default function PortfolioDetailPage() {
                       <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-[#f97316]/20 transition-colors">
                         <ChevronLeft className="w-6 h-6 text-white" />
                       </div>
-                      <span className="text-white/50 text-sm">
+                      <span className="text-white/70 text-sm">
                         Proyek Sebelumnya
                       </span>
                     </div>
@@ -824,7 +813,7 @@ export default function PortfolioDetailPage() {
                 <Link href={`/portfolio/${nextPortfolio.id}`}>
                   <div className="group bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-[#f97316]/30 transition-all text-right">
                     <div className="flex items-center justify-end gap-4 mb-4">
-                      <span className="text-white/50 text-sm">
+                      <span className="text-white/70 text-sm">
                         Proyek Selanjutnya
                       </span>
                       <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-[#f97316]/20 transition-colors">
@@ -877,7 +866,7 @@ export default function PortfolioDetailPage() {
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-6">
               Punya Proyek <span className="gradient-text">Serupa?</span>
             </h2>
-            <p className="text-[#1e3a5f]/70 text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-[#475569] text-lg mb-8 max-w-2xl mx-auto">
               Kami siap membantu mewujudkan ide Anda menjadi realitas digital
               yang menakjubkan.
             </p>
@@ -895,6 +884,7 @@ export default function PortfolioDetailPage() {
       </section>
 
       <Footer />
-    </main>
+      </main>
+    </SceneProvider>
   );
 }

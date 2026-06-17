@@ -1,6 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import SectionView from "@/components/three/SectionView";
+import TechStackScene from "@/components/three/scenes/TechStackScene";
+import SceneFallback from "@/components/three/fallbacks/SceneFallback";
+import { SECTION } from "@/components/three/sceneStore";
+import { useSectionScroll } from "@/components/three/hooks/useSectionScroll";
 
 const techCategories = [
   {
@@ -47,14 +52,28 @@ const techCategories = [
 ];
 
 export default function TechStack() {
+  const sectionRef = useSectionScroll<HTMLElement>(SECTION.tech);
+
   return (
-    <section id="tech" className="relative section-padding overflow-hidden bg-gradient-to-b from-white via-[#1e3a5f]/5 to-white">
+    <section
+      ref={sectionRef}
+      id="tech"
+      className="relative section-padding overflow-hidden bg-gradient-to-b from-white via-[#1e3a5f]/5 to-white"
+    >
       {/* Background pattern */}
       <div className="absolute inset-0 grid-pattern opacity-30" />
 
       {/* Decorative elements */}
       <div className="absolute top-1/2 left-0 w-[400px] h-[400px] rounded-full bg-[#f97316]/5 blur-[120px] -translate-y-1/2" />
       <div className="absolute top-1/2 right-0 w-[400px] h-[400px] rounded-full bg-[#1e3a5f]/5 blur-[120px] -translate-y-1/2" />
+
+      {/* 3D ambient layer (behind content, above background decorations) */}
+      <SectionView
+        className="scene-view absolute inset-0 pointer-events-none"
+        fallback={<SceneFallback variant="subtle" />}
+      >
+        <TechStackScene />
+      </SectionView>
 
       <div className="relative z-10 container-custom">
         {/* Section Header */}
@@ -77,7 +96,7 @@ export default function TechStack() {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
             Teknologi <span className="gradient-text">Yang Kami Gunakan</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-[#1e3a5f]/60 text-lg">
+          <p className="max-w-2xl mx-auto text-[#475569] text-lg">
             Tools dan framework terbaik untuk menghadirkan solusi digital berkualitas tinggi
           </p>
         </motion.div>
@@ -120,7 +139,7 @@ export default function TechStack() {
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{tech.icon}</span>
-                      <span className="text-sm text-[#1e3a5f]/80 group-hover:text-[#1e3a5f] font-medium transition-colors">
+                      <span className="text-sm text-[#475569] group-hover:text-[#1e3a5f] font-medium transition-colors">
                         {tech.name}
                       </span>
                     </div>
@@ -139,7 +158,7 @@ export default function TechStack() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center mt-12"
         >
-          <p className="text-[#1e3a5f]/50 text-sm">
+          <p className="text-[#64748b] text-sm">
             Dan masih banyak lagi tools lainnya yang kami sesuaikan dengan kebutuhan project Anda
           </p>
         </motion.div>

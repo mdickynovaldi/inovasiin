@@ -22,7 +22,7 @@ export default function TrustedBy() {
           transition={{ duration: 0.6 }}
           className="text-center mb-10"
         >
-          <p className="text-sm uppercase tracking-widest text-[#f97316] font-medium mb-2">
+          <p className="text-sm uppercase tracking-widest text-[#c2410c] font-medium mb-2">
             Ideal for
           </p>
           <h3 className="text-xl text-[#1e3a5f]">
@@ -48,7 +48,7 @@ export default function TrustedBy() {
               className="flex flex-col items-center gap-3 group"
             >
               <div className="w-16 h-16 rounded-2xl bg-white shadow-lg border border-gray-100 flex items-center justify-center group-hover:border-[#f97316]/30 group-hover:shadow-orange-500/10 transition-all">
-                <industry.icon className="w-7 h-7 text-[#1e3a5f]/60 group-hover:text-[#f97316] transition-colors" />
+                <industry.icon className="w-7 h-7 text-[#475569] group-hover:text-[#c2410c] transition-colors" />
               </div>
               <span className="text-sm text-[#1e3a5f]/70 group-hover:text-[#1e3a5f] font-medium transition-colors">
                 {industry.label}

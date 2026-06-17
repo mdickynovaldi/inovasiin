@@ -92,14 +92,14 @@ export default function Showcase() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#f97316] font-medium mb-4"
+            className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-medium mb-4"
           >
             Selected Projects
           </motion.span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
             Project <span className="gradient-text">Showcase</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-[#1e3a5f]/60 text-lg">
+          <p className="max-w-2xl mx-auto text-[#475569] text-lg">
             Beberapa project yang menunjukkan kemampuan kami dalam menghadirkan solusi digital yang berdampak
           </p>
         </motion.div>
@@ -128,7 +128,7 @@ export default function Showcase() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="px-8 py-3 rounded-full border-2 border-[#f97316] text-[#f97316] font-medium hover:bg-[#f97316] hover:text-white transition-all"
+              className="px-8 py-3 rounded-full border-2 border-[#f97316] text-[#c2410c] font-medium hover:bg-[#f97316] hover:text-white transition-all"
             >
               Lihat Semua Project
             </motion.button>
@@ -175,15 +175,15 @@ function ProjectCard({ project, index }: ProjectCardProps) {
         {/* Content */}
         <div className="p-6">
           {/* Industry */}
-          <p className="text-sm text-[#f97316] font-medium mb-2">{project.industry}</p>
+          <p className="text-sm text-[#c2410c] font-medium mb-2">{project.industry}</p>
 
           {/* Title */}
-          <h3 className="text-xl font-bold text-[#1e3a5f] mb-3 group-hover:text-[#f97316] transition-colors">
+          <h3 className="text-xl font-bold text-[#1e3a5f] mb-3 group-hover:text-[#c2410c] transition-colors">
             {project.title}
           </h3>
 
           {/* Description */}
-          <p className="text-[#1e3a5f]/60 text-sm leading-relaxed mb-4">
+          <p className="text-[#475569] text-sm leading-relaxed mb-4">
             {project.description}
           </p>
 
@@ -191,10 +191,10 @@ function ProjectCard({ project, index }: ProjectCardProps) {
           <div className="flex gap-6 mb-4">
             {project.stats.map((stat) => (
               <div key={stat.label} className="flex items-center gap-2">
-                <stat.icon className="w-4 h-4 text-[#f97316]" />
+                <stat.icon className="w-4 h-4 text-[#c2410c]" />
                 <div>
                   <p className="text-lg font-bold text-[#1e3a5f]">{stat.value}</p>
-                  <p className="text-xs text-[#1e3a5f]/50">{stat.label}</p>
+                  <p className="text-xs text-[#64748b]">{stat.label}</p>
                 </div>
               </div>
             ))}
@@ -205,7 +205,7 @@ function ProjectCard({ project, index }: ProjectCardProps) {
             {project.tags.map((tag) => (
               <span
                 key={tag}
-                className="px-2 py-1 rounded-md bg-[#1e3a5f]/5 text-xs text-[#1e3a5f]/70"
+                className="px-2 py-1 rounded-md bg-[#1e3a5f]/5 text-xs text-[#475569]"
               >
                 {tag}
               </span>

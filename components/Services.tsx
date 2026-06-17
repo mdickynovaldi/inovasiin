@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   Box,
@@ -12,6 +12,10 @@ import {
   Glasses,
   Smartphone,
 } from "lucide-react";
+import SectionView from "@/components/three/SectionView";
+import ServicesScene from "@/components/three/scenes/ServicesScene";
+import SceneFallback from "@/components/three/fallbacks/SceneFallback";
+import { SECTION, setSectionProgress } from "@/components/three/sceneStore";
 
 const services = [
   {
@@ -82,6 +86,16 @@ export default function Services() {
   const leftColumnY = useTransform(scrollYProgress, [0, 1], [50, -50]);
   const rightColumnY = useTransform(scrollYProgress, [0, 1], [-50, 50]);
 
+  // Publish scroll progress to the shared scene store so ServicesScene's
+  // useFrame can read it (R3F Canvas is an isolated reconciler).
+  useEffect(() => {
+    setSectionProgress(SECTION.services, scrollYProgress.get());
+    const unsubscribe = scrollYProgress.on("change", (v) => {
+      setSectionProgress(SECTION.services, v);
+    });
+    return unsubscribe;
+  }, [scrollYProgress]);
+
   return (
     <section
       id="services"
@@ -92,6 +106,14 @@ export default function Services() {
       <div className="absolute inset-0 grid-pattern opacity-40" />
       <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-[#f97316]/5 blur-[100px]" />
       <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-[#1e3a5f]/5 blur-[100px]" />
+
+      {/* 3D ambient layer — sits behind the card grid (canvas renders at z-5) */}
+      <SectionView
+        className="scene-view absolute inset-0 pointer-events-none"
+        fallback={<SceneFallback variant="subtle" />}
+      >
+        <ServicesScene />
+      </SectionView>
 
       <div className="relative z-10 container-custom">
         {/* Section Header */}
@@ -107,14 +129,14 @@ export default function Services() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#f97316] font-medium mb-4"
+            className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-medium mb-4"
           >
             What We Build
           </motion.span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
             Layanan <span className="gradient-text">Digital & Kreatif</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-[#1e3a5f]/60 text-lg">
+          <p className="max-w-2xl mx-auto text-[#475569] text-lg">
             Mulai dari satu layanan atau paket end-to-end. Kami siap membantu dari konsep hingga produk jadi.
           </p>
         </motion.div>
@@ -176,10 +198,10 @@ function ServiceCard({
 
         {/* Content */}
         <div className="flex-1">
-          <h3 className="text-xl font-semibold text-[#1e3a5f] mb-2 group-hover:text-[#f97316] transition-colors">
+          <h3 className="text-xl font-semibold text-[#1e3a5f] mb-2 group-hover:text-[#c2410c] transition-colors">
             {service.title}
           </h3>
-          <p className="text-[#1e3a5f]/60 text-sm leading-relaxed">
+          <p className="text-[#475569] text-sm leading-relaxed">
             {service.description}
           </p>
         </div>

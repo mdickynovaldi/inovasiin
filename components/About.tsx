@@ -2,6 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Target, Users, Lightbulb, CheckCircle } from "lucide-react";
+import SectionView from "@/components/three/SectionView";
+import AboutScene from "@/components/three/scenes/AboutScene";
+import SceneFallback from "@/components/three/fallbacks/SceneFallback";
+import { SECTION } from "@/components/three/sceneStore";
+import { useSectionScroll } from "@/components/three/hooks/useSectionScroll";
 
 const values = [
   {
@@ -36,12 +41,25 @@ const expertise = [
 ];
 
 export default function About() {
+  const sectionRef = useSectionScroll<HTMLElement>(SECTION.about);
+
   return (
-    <section id="about" className="relative section-padding overflow-hidden bg-white">
-      {/* Background decorations */}
+    <section
+      ref={sectionRef}
+      id="about"
+      className="relative section-padding overflow-hidden bg-white">
+      {/* Background decorations (below the Canvas at z-5) */}
       <div className="absolute inset-0 grid-pattern opacity-30" />
       <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-[#f97316]/5 blur-[150px]" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full bg-[#1e3a5f]/5 blur-[150px]" />
+
+      {/* 3D signature object — anchored to the right negative-space column,
+          behind the value cards (Canvas renders at z-5). */}
+      <SectionView
+        className="scene-view absolute inset-y-0 right-0 w-full lg:w-1/2 pointer-events-none"
+        fallback={<SceneFallback variant="subtle" />}>
+        <AboutScene />
+      </SectionView>
 
       <div className="relative z-10 container-custom">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -57,7 +75,7 @@ export default function About() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#f97316] font-medium mb-4"
+              className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-medium mb-4"
             >
               About Us
             </motion.span>
@@ -67,7 +85,7 @@ export default function About() {
               Into Reality
             </h2>
 
-            <div className="space-y-4 text-[#1e3a5f]/70 mb-8">
+            <div className="space-y-4 text-[#475569] mb-8">
               <p className="text-lg">
                 <span className="text-[#1e3a5f] font-medium">
                   PT INOVASIIN SMART SOLUTION
@@ -91,9 +109,9 @@ export default function About() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 text-sm text-[#1e3a5f]/80"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 text-sm text-[#475569]"
                 >
-                  <CheckCircle className="w-3.5 h-3.5 text-[#f97316]" />
+                  <CheckCircle className="w-3.5 h-3.5 text-[#c2410c]" />
                   {item}
                 </motion.span>
               ))}
@@ -121,15 +139,15 @@ export default function About() {
                 <div className="flex gap-5">
                   {/* Icon */}
                   <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center group-hover:from-[#f97316]/20 group-hover:to-[#1e3a5f]/20 transition-all">
-                    <value.icon className="w-6 h-6 text-[#f97316]" />
+                    <value.icon className="w-6 h-6 text-[#c2410c]" />
                   </div>
 
                   {/* Content */}
                   <div>
-                    <h3 className="text-xl font-semibold text-[#1e3a5f] mb-2 group-hover:text-[#f97316] transition-colors">
+                    <h3 className="text-xl font-semibold text-[#1e3a5f] mb-2 group-hover:text-[#c2410c] transition-colors">
                       {value.title}
                     </h3>
-                    <p className="text-[#1e3a5f]/60 text-sm leading-relaxed">
+                    <p className="text-[#475569] text-sm leading-relaxed">
                       {value.description}
                     </p>
                   </div>
@@ -163,7 +181,7 @@ export default function About() {
                   >
                     {stat.value}
                   </motion.p>
-                  <p className="text-xs text-[#1e3a5f]/50 mt-1">{stat.label}</p>
+                  <p className="text-xs text-[#64748b] mt-1">{stat.label}</p>
                 </div>
               ))}
             </motion.div>

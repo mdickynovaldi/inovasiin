@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
-    domains: ["i.pinimg.com"],
+    // `images.domains` was deprecated in Next 16 in favor of `remotePatterns`.
+    remotePatterns: [
+      { protocol: "https", hostname: "i.pinimg.com" },
+      // Supabase Storage (portfolio thumbnails / media)
+      { protocol: "https", hostname: "*.supabase.co" },
+    ],
   },
 };
 

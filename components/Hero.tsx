@@ -1,71 +1,60 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import dynamic from "next/dynamic";
+import { useRef, useEffect } from "react";
 
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useMotionValue,
-  useSpring,
-} from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { motion, useTransform, useMotionValue } from "framer-motion";
+import { ChevronRight, ChevronDown } from "lucide-react";
+import SectionView from "./three/SectionView";
+import HeroScene from "./three/scenes/HeroScene";
+import SceneFallback from "./three/fallbacks/SceneFallback";
+import { setSectionProgress, SECTION } from "./three/sceneStore";
 
-// Dynamic import untuk TechScene3D (SSR disabled karena Three.js membutuhkan window)
-const TechScene3D = dynamic(() => import("./TechScene3D"), {
-  ssr: false,
-  loading: () => null, // Loading sudah ditangani oleh LoadingScreen
-});
-
+/**
+ * Hero — a pinned, scroll-driven SCENARIO. The section is 280vh tall with a
+ * sticky stage; scrolling advances the 3D HeroScene through its acts while the
+ * DOM captions crossfade in step:
+ *   Act 1  brand intro      ·  Act 2  the promise  ·  Act 3  the offer + CTA
+ */
 export default function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isMobile, setIsMobile] = useState(false);
 
-  // Deteksi perangkat mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-  });
-
-  // Mouse tracking
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const smoothMouseX = useSpring(mouseX, { stiffness: 50, damping: 20 });
-  const smoothMouseY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+  // Deterministic scroll progress (0..1) for the pinned hero. Computed directly
+  // from the section's rect on every scroll — more reliable here than
+  // useScroll({offset}) with a pinned/sticky child.
+  const progress = useMotionValue(0);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const { clientX, clientY } = e;
-      const { innerWidth, innerHeight } = window;
-      mouseX.set((clientX - innerWidth / 2) / 50);
-      mouseY.set((clientY - innerHeight / 2) / 50);
-      setMousePosition({ x: clientX, y: clientY });
+    const el = containerRef.current;
+    if (!el) return;
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      const p = total > 0 ? clamp(-rect.top / total) : 0;
+      progress.set(p);
+      setSectionProgress(SECTION.hero, p);
     };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [progress]);
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
-
-  // Parallax transforms
-  const textOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const textY = useTransform(scrollYProgress, [0, 0.5], ["0%", "20%"]);
+  // Caption acts — crossfade across the scroll.
+  const act1 = useTransform(progress, [0, 0.22, 0.3], [1, 1, 0]);
+  const act1Y = useTransform(progress, [0, 0.3], ["0%", "-12%"]);
+  const act2 = useTransform(progress, [0.3, 0.38, 0.54, 0.62], [0, 1, 1, 0]);
+  const act2Y = useTransform(progress, [0.3, 0.62], ["10%", "-10%"]);
+  const act3 = useTransform(progress, [0.62, 0.72, 0.95, 1], [0, 1, 1, 1]);
+  const act3Y = useTransform(progress, [0.62, 0.78], ["10%", "0%"]);
+  const hintOpacity = useTransform(progress, [0, 0.12], [1, 0]);
 
   const scrollToServices = () => {
     document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
   };
-
   const scrollToContact = () => {
     document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -74,211 +63,122 @@ export default function Hero() {
     <section
       id="home"
       ref={containerRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0f172a]">
-      {/* 3D Background Scene - Hanya untuk Desktop */}
-      {!isMobile && <TechScene3D />}
+      // Transparent so the fixed 3D canvas (z-5) shows through behind the copy;
+      // the page's white body provides the backdrop. (An opaque bg here would
+      // hide the canvas because the sticky stage creates a stacking context.)
+      className="relative min-h-[280vh] bg-transparent">
+      {/* Pinned stage */}
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
+        {/* Subtle grid texture */}
+        <div className="absolute inset-0 grid-pattern opacity-60 pointer-events-none" />
 
-      {/* Simple Background untuk Mobile - Lebih Ringan */}
-      {isMobile && (
-        <div className="absolute inset-0 z-0">
-          {/* Gradient Background */}
-          <div className="absolute inset-0 bg-linear-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]" />
+        {/* 3D scenario (desktop) / animated fallback (mobile) */}
+        <SectionView
+          className="scene-view"
+          camera={{ position: [0, 0, 9], fov: 45 }}
+          fallback={<SceneFallback variant="hero" />}>
+          <HeroScene />
+        </SectionView>
 
-          {/* Animated Gradient Orbs */}
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/4 -left-1/4 w-[300px] h-[300px] rounded-full bg-linear-to-r from-[#f97316]/20 to-transparent blur-3xl"
-          />
-          <motion.div
-            animate={{
-              scale: [1.2, 1, 1.2],
-              opacity: [0.2, 0.4, 0.2],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1,
-            }}
-            className="absolute bottom-1/4 -right-1/4 w-[250px] h-[250px] rounded-full bg-linear-to-l from-[#f97316]/15 to-transparent blur-3xl"
-          />
+        {/* Readability scrim — a soft white pool behind the centered copy so the
+            text always stays legible over the 3D devices (z between canvas and
+            text). Tall + strong enough to cover the full headline + subheading
+            column; fades to transparent before the corner devices. */}
+        <div
+          aria-hidden
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 46% 44% at 50% 52%, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.86) 46%, rgba(255,255,255,0) 78%)",
+          }}
+        />
 
-          {/* Grid Pattern */}
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(249,115,22,0.3) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(249,115,22,0.3) 1px, transparent 1px)
-              `,
-              backgroundSize: "50px 50px",
-            }}
-          />
-
-          {/* Floating Dots */}
-          <div className="absolute inset-0 overflow-hidden">
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 rounded-full bg-[#f97316]/40"
-                style={{
-                  left: `${15 + i * 15}%`,
-                  top: `${20 + (i % 3) * 25}%`,
-                }}
-                animate={{
-                  y: [0, -20, 0],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{
-                  duration: 3 + i * 0.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: i * 0.3,
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Interactive gradient overlay that follows mouse */}
-      <motion.div
-        style={{
-          x: smoothMouseX,
-          y: smoothMouseY,
-        }}
-        className="absolute inset-0 z-1 pointer-events-none">
-        {/* Subtle gradient */}
-        <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-[#0f172a]/50" />
-      </motion.div>
-
-      {/* Interactive cursor glow effect */}
-      <motion.div
-        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none z-3 hidden md:block"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)",
-          left: mousePosition.x - 250,
-          top: mousePosition.y - 250,
-        }}
-      />
-
-      {/* Foreground - Minimalist Content */}
-      <motion.div
-        style={{ opacity: textOpacity, y: textY }}
-        className="relative z-20 container-custom text-center px-4">
-        {/* Brand Logo */}
+        {/* ---- Act 1 · brand intro ---- */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 0.2, type: "spring" }}
-          className="mb-8">
-          <motion.div
-            animate={{
-              filter: [
-                "drop-shadow(0 0 30px rgba(249,115,22,0.2))",
-                "drop-shadow(0 0 60px rgba(249,115,22,0.4))",
-                "drop-shadow(0 0 30px rgba(249,115,22,0.2))",
-              ],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="inline-flex items-center justify-center"></motion.div>
-        </motion.div>
-
-        {/* Brand Name - Minimalist */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-4 tracking-tight">
-          <span className="text-white">Inovasi</span>
-          <span className="text-[#f97316]">in</span>
-        </motion.h1>
-
-        {/* Tagline - Simple */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-white/40 text-sm md:text-base tracking-[0.3em] uppercase mb-16">
-          Digital Creative Studio
-        </motion.p>
-
-        {/* Single CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          style={{ opacity: act1, y: act1Y }}
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-4 pointer-events-none">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-4 tracking-tight">
+            <span className="text-[#1e3a5f]">Inovasi</span>
+            <span className="text-[#f97316]">in</span>
+          </h1>
+          <p className="text-[#475569] text-sm md:text-base tracking-[0.3em] uppercase mb-10 font-medium">
+            Digital Creative Studio
+          </p>
           <motion.button
             onClick={scrollToContact}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
-            className="group flex items-center gap-3 px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white font-medium backdrop-blur-sm hover:bg-white/10 hover:border-[#f97316]/30 transition-all duration-300">
+            className="group pointer-events-auto flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white font-semibold shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-300">
             <span>Mulai Proyek</span>
-            <motion.div
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}>
-              <ChevronRight className="w-5 h-5 text-[#f97316] group-hover:text-white transition-colors" />
-            </motion.div>
+            <ChevronRight className="w-5 h-5" />
           </motion.button>
         </motion.div>
 
-        {/* Subtle service indicators */}
+        {/* ---- Act 2 · the promise ---- */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.2 }}
-          className="mt-20 flex flex-wrap justify-center gap-8 text-white/30 text-xs tracking-wider uppercase">
-          {["3D & Animation", "VR/AR", "Web Apps", "LMS"].map(
-            (service, index) => (
-              <motion.span
-                key={service}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.3 + index * 0.1 }}
-                className="hover:text-[#f97316] transition-colors cursor-default">
-                {service}
-              </motion.span>
-            )
-          )}
+          style={{ opacity: act2, y: act2Y }}
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-4 pointer-events-none">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]">
+            <span className="text-[#1e3a5f]">Dari </span>
+            <span className="text-[#f97316]">Ide</span>
+            <br />
+            <span className="text-[#1e3a5f]">Menjadi Realitas Digital</span>
+          </h2>
+          <p className="mt-6 max-w-xl text-[#475569] text-base md:text-lg">
+            Kami merancang, membangun, dan menghidupkan pengalaman 3D, VR/AR, dan
+            produk digital yang berdampak.
+          </p>
         </motion.div>
-      </motion.div>
 
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-25">
+        {/* ---- Act 3 · the offer ---- */}
         <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-3 cursor-pointer group"
+          style={{ opacity: act3, y: act3Y }}
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-4 pointer-events-none">
+          <p className="text-[#64748b] text-xs md:text-sm tracking-[0.3em] uppercase mb-5 font-semibold">
+            Apa yang kami bangun
+          </p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 max-w-2xl mb-9">
+            {["3D & Animation", "VR / AR", "Web & Apps", "Motion Graphics", "LMS"].map(
+              (s) => (
+                <span
+                  key={s}
+                  className="text-lg md:text-2xl font-semibold text-[#1e3a5f]">
+                  {s}
+                </span>
+              )
+            )}
+          </div>
+          <motion.button
+            onClick={scrollToContact}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+            className="group pointer-events-auto flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white font-semibold shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-300">
+            <span>Mulai Proyek</span>
+            <ChevronRight className="w-5 h-5" />
+          </motion.button>
+        </motion.div>
+
+        {/* Scroll hint (fades after the first beat) */}
+        <motion.div
+          style={{ opacity: hintOpacity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-25 flex flex-col items-center gap-2 cursor-pointer group pointer-events-auto"
           onClick={scrollToServices}>
-          <motion.div className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-1.5 group-hover:border-[#f97316]/50 transition-colors">
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="w-1.5 h-1.5 rounded-full bg-[#f97316]"
-            />
+          <span className="text-[#64748b] text-[11px] tracking-[0.25em] uppercase">
+            Scroll
+          </span>
+          <motion.div
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}>
+            <ChevronDown className="w-5 h-5 text-[#f97316]" />
           </motion.div>
         </motion.div>
-      </motion.div>
 
-      {/* Corner accents */}
-      <div className="absolute top-8 left-8 w-16 h-16 border-l border-t border-white/10 pointer-events-none" />
-      <div className="absolute top-8 right-8 w-16 h-16 border-r border-t border-white/10 pointer-events-none" />
-      <div className="absolute bottom-8 left-8 w-16 h-16 border-l border-b border-white/10 pointer-events-none" />
-      <div className="absolute bottom-8 right-8 w-16 h-16 border-r border-b border-white/10 pointer-events-none" />
+        {/* Corner accents */}
+        <div className="absolute top-8 left-8 w-16 h-16 border-l border-t border-[#1e3a5f]/15 pointer-events-none" />
+        <div className="absolute top-8 right-8 w-16 h-16 border-r border-t border-[#1e3a5f]/15 pointer-events-none" />
+        <div className="absolute bottom-8 left-8 w-16 h-16 border-l border-b border-[#1e3a5f]/15 pointer-events-none" />
+        <div className="absolute bottom-8 right-8 w-16 h-16 border-r border-b border-[#1e3a5f]/15 pointer-events-none" />
+      </div>
     </section>
   );
 }

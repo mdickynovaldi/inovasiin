@@ -8,7 +8,6 @@ import {
   Save,
   Loader2,
   Image as ImageIcon,
-  Youtube,
   Plus,
   X,
   GripVertical,
@@ -16,6 +15,7 @@ import {
   Trash2,
   Link as LinkIcon,
 } from "lucide-react";
+import { Youtube } from "../icons/BrandIcons";
 import Link from "next/link";
 import { v4 as uuidv4 } from "uuid";
 import {

@@ -30,6 +30,7 @@ export default function AdminDashboard() {
     featuredPortfolios: 0,
     totalViews: 0,
   })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [recentPortfolios, setRecentPortfolios] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 

@@ -10,6 +10,11 @@ import {
   ArrowRight,
   CheckCircle,
 } from "lucide-react";
+import SectionView from "@/components/three/SectionView";
+import ContactScene from "@/components/three/scenes/ContactScene";
+import SceneFallback from "@/components/three/fallbacks/SceneFallback";
+import { SECTION } from "@/components/three/sceneStore";
+import { useSectionScroll } from "@/components/three/hooks/useSectionScroll";
 
 const projectTypes = [
   "VR/AR Development",
@@ -30,6 +35,7 @@ export default function Contact() {
     message: "",
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const sectionRef = useSectionScroll<HTMLElement>(SECTION.contact);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +66,7 @@ export default function Contact() {
 
   return (
     <section
+      ref={sectionRef}
       id="contact"
       className="relative section-padding overflow-hidden bg-linear-to-b from-white via-[#1e3a5f]/5 to-[#1e3a5f]">
       {/* Background pattern */}
@@ -68,6 +75,13 @@ export default function Contact() {
       {/* Decorative elements */}
       <div className="absolute top-1/4 left-0 w-[500px] h-[500px] rounded-full bg-[#f97316]/10 blur-[150px]" />
       <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] rounded-full bg-[#1e3a5f]/20 blur-[150px]" />
+
+      {/* 3D background accent — sits behind content (Canvas at z-5), pointer-events disabled so the form stays usable */}
+      <SectionView
+        className="scene-view pointer-events-none absolute inset-0"
+        fallback={<SceneFallback variant="subtle" />}>
+        <ContactScene />
+      </SectionView>
 
       <div className="relative z-10 container-custom">
         {/* Section Header */}
@@ -82,7 +96,7 @@ export default function Contact() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#f97316] font-medium mb-4">
+            className="inline-block px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-medium mb-4">
             Get In Touch
           </motion.span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
@@ -90,7 +104,7 @@ export default function Contact() {
             <br />
             Into Reality?
           </h2>
-          <p className="max-w-2xl mx-auto text-[#1e3a5f]/60 text-lg">
+          <p className="max-w-2xl mx-auto text-[#475569] text-lg">
             Ceritakan project Anda dan mari diskusikan bagaimana kami bisa
             membantu mewujudkannya
           </p>
@@ -108,7 +122,7 @@ export default function Contact() {
               <h3 className="text-2xl font-bold text-[#1e3a5f] mb-4">
                 Mari Berkolaborasi
               </h3>
-              <p className="text-[#1e3a5f]/60">
+              <p className="text-[#475569]">
                 Kami selalu excited untuk mendiskusikan project baru. Kirim
                 brief Anda atau jadwalkan meeting untuk membahas kebutuhan Anda.
               </p>
@@ -121,15 +135,15 @@ export default function Contact() {
                 whileHover={{ x: 5 }}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:border-[#f97316]/30 transition-all group">
                 <div className="w-12 h-12 rounded-xl bg-linear-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-[#f97316]" />
+                  <Mail className="w-5 h-5 text-[#c2410c]" />
                 </div>
                 <div>
-                  <p className="text-sm text-[#1e3a5f]/50">Email</p>
-                  <p className="text-[#1e3a5f] font-medium group-hover:text-[#f97316] transition-colors">
+                  <p className="text-sm text-[#64748b]">Email</p>
+                  <p className="text-[#1e3a5f] font-medium group-hover:text-[#c2410c] transition-colors">
                     inovasiin.id@gmail.com
                   </p>
                 </div>
-                <ArrowRight className="w-4 h-4 text-[#1e3a5f]/30 ml-auto group-hover:text-[#f97316] transition-colors" />
+                <ArrowRight className="w-4 h-4 text-[#475569] ml-auto group-hover:text-[#c2410c] transition-colors" />
               </motion.a>
 
               <motion.a
@@ -139,25 +153,25 @@ export default function Contact() {
                 whileHover={{ x: 5 }}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:border-[#f97316]/30 transition-all group">
                 <div className="w-12 h-12 rounded-xl bg-linear-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-[#f97316]" />
+                  <Phone className="w-5 h-5 text-[#c2410c]" />
                 </div>
                 <div>
-                  <p className="text-sm text-[#1e3a5f]/50">WhatsApp</p>
-                  <p className="text-[#1e3a5f] font-medium group-hover:text-[#f97316] transition-colors">
+                  <p className="text-sm text-[#64748b]">WhatsApp</p>
+                  <p className="text-[#1e3a5f] font-medium group-hover:text-[#c2410c] transition-colors">
                     +62 851-5626-2400
                   </p>
                 </div>
-                <ArrowRight className="w-4 h-4 text-[#1e3a5f]/30 ml-auto group-hover:text-[#f97316] transition-colors" />
+                <ArrowRight className="w-4 h-4 text-[#475569] ml-auto group-hover:text-[#c2410c] transition-colors" />
               </motion.a>
 
               <motion.div
                 whileHover={{ x: 5 }}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
                 <div className="w-12 h-12 rounded-xl bg-linear-to-br from-[#f97316]/10 to-[#1e3a5f]/10 flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-[#f97316]" />
+                  <MapPin className="w-5 h-5 text-[#c2410c]" />
                 </div>
                 <div>
-                  <p className="text-sm text-[#1e3a5f]/50">Location</p>
+                  <p className="text-sm text-[#64748b]">Location</p>
                   <p className="text-[#1e3a5f] font-medium">Indonesia</p>
                 </div>
               </motion.div>

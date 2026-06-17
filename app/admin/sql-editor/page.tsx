@@ -16,7 +16,6 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronRight,
-  RefreshCw,
   Sparkles,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -28,11 +27,6 @@ interface QueryHistory {
   duration: number
   rowCount: number
   success: boolean
-}
-
-interface TableInfo {
-  name: string
-  columns: string[]
 }
 
 // Predefined SQL templates
@@ -174,6 +168,7 @@ ORDER BY table_name;`,
 
 export default function SQLEditorPage() {
   const [query, setQuery] = useState('')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [results, setResults] = useState<any[] | null>(null)
   const [columns, setColumns] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -190,6 +185,7 @@ export default function SQLEditorPage() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setHistory(parsed.map((h: any) => ({ ...h, timestamp: new Date(h.timestamp) })))
       } catch {}
     }
@@ -249,6 +245,7 @@ export default function SQLEditorPage() {
         const endTime = performance.now()
         addToHistory(query, endTime - startTime, 0, false)
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const endTime = performance.now()
       setExecutionTime(endTime - startTime)
