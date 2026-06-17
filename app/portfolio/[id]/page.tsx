@@ -33,11 +33,6 @@ import { getPortfolioById, getAllPortfolios } from "@/lib/portfolioService";
 import { PortfolioWithRelations } from "@/types/database";
 import YouTube from "react-youtube";
 import Image from "next/image";
-import SceneProvider from "@/components/three/SceneProvider";
-import SectionView from "@/components/three/SectionView";
-import PortfolioHeroScene from "@/components/three/scenes/PortfolioHeroScene";
-import SceneFallback from "@/components/three/fallbacks/SceneFallback";
-import { SECTION, setSectionProgress } from "@/components/three/sceneStore";
 
 // Icon mapping
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } =
@@ -66,18 +61,6 @@ function getCategoryGradient(category: string): string {
   return gradients[category] || "from-[#1e3a5f] to-[#0f2847]";
 }
 
-// Solid accent color (for the 3D hero scene) derived from category — orange fallback.
-function getCategoryAccent(category: string): string {
-  const accents: { [key: string]: string } = {
-    "Virtual Reality": "#f97316",
-    "Augmented Reality": "#fb923c",
-    "Web Development": "#0ea5e9",
-    "3D Modeling": "#a855f7",
-    "Motion Graphics": "#1e3a5f",
-  };
-  return accents[category] || "#f97316";
-}
-
 export default function PortfolioDetailPage() {
   const params = useParams();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -100,18 +83,8 @@ export default function PortfolioDetailPage() {
     offset: ["start start", "end start"],
   });
 
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.05]);
-
-  // Publish hero scroll progress to the 3D scene (PortfolioHeroScene reads it).
-  useEffect(() => {
-    setSectionProgress(SECTION.portfolioHero, scrollYProgress.get());
-    const unsub = scrollYProgress.on("change", (v) =>
-      setSectionProgress(SECTION.portfolioHero, v)
-    );
-    return () => unsub();
-  }, [scrollYProgress]);
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   useEffect(() => {
     async function loadData() {
@@ -188,7 +161,6 @@ export default function PortfolioDetailPage() {
   }
 
   const gradient = getCategoryGradient(portfolio.category);
-  const accentColor = getCategoryAccent(portfolio.category);
 
   // Animation variants
   const containerVariants = {
@@ -224,133 +196,132 @@ export default function PortfolioDetailPage() {
   };
 
   return (
-    <SceneProvider>
-      <main className="relative overflow-hidden bg-white" ref={containerRef}>
+    <main className="relative overflow-hidden bg-white" ref={containerRef}>
       <Navbar />
 
       {/* Hero Section — light brand theme with 3D glass product shot */}
       <section
         ref={heroRef}
-        className="relative min-h-[80vh] flex items-end overflow-hidden bg-gradient-to-b from-white via-[#f8fafc] to-white">
-        {/* Soft brand background decorations (below the 3D canvas at z-5) */}
-        <motion.div
-          style={{ y: heroY, scale: heroScale }}
-          className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute inset-0 grid-pattern opacity-50" />
-          <div className="absolute top-1/4 right-1/4 w-[28rem] h-[28rem] rounded-full bg-[#f97316]/10 blur-[120px]" />
-          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 rounded-full bg-[#1e3a5f]/10 blur-[120px]" />
-        </motion.div>
+        className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-b from-white via-[#f8fafc] to-white">
+        {/* Soft brand background decorations */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 grid-pattern opacity-40" />
+          <div className="absolute top-1/4 right-0 w-[28rem] h-[28rem] rounded-full bg-[#f97316]/10 blur-[120px]" />
+          <div className="absolute bottom-0 left-1/4 w-96 h-96 rounded-full bg-[#1e3a5f]/10 blur-[120px]" />
+        </div>
 
-        {/* 3D glass product shot (desktop) / animated fallback (mobile) */}
-        <SectionView
-          className="scene-view"
-          fallback={<SceneFallback variant="hero" />}
-          camera={{ position: [0, 0, 6], fov: 45 }}>
-          <PortfolioHeroScene
-            thumbnail={portfolio.thumbnail_url}
-            accent={accentColor}
-          />
-        </SectionView>
-
-        {/* Hero Content — navy text overlay on the light hero */}
         <motion.div
-          style={{ opacity: heroOpacity }}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="relative z-10 container-custom pb-20 pt-40 pointer-events-none">
+          style={{ y: heroY, opacity: heroOpacity }}
+          className="relative z-10 container-custom">
           {/* Back Button */}
-          <motion.div variants={itemVariants} className="mb-8 pointer-events-auto">
-            <Link href="/portfolio">
-              <motion.button
-                whileHover={{ x: -5 }}
-                className="inline-flex items-center gap-2 text-[#475569] hover:text-[#c2410c] transition-colors">
-                <ArrowLeft className="w-5 h-5" />
-                <span className="font-medium">Kembali ke Portfolio</span>
-              </motion.button>
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-10">
+            <Link
+              href="/portfolio"
+              className="inline-flex items-center gap-2 text-[#475569] hover:text-[#c2410c] transition-colors group">
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              <span className="font-medium">Kembali ke Portfolio</span>
             </Link>
           </motion.div>
 
-          {/* Category & Year */}
-          <motion.div
-            variants={itemVariants}
-            className="flex flex-wrap gap-3 mb-6">
-            <span className="px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-semibold">
-              {portfolio.category}
-            </span>
-            {portfolio.year && (
-              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 text-sm text-[#475569]">
-                <Calendar className="w-4 h-4" />
-                {portfolio.year}
-              </span>
-            )}
-            {portfolio.duration && (
-              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 text-sm text-[#475569]">
-                <Clock className="w-4 h-4" />
-                {portfolio.duration}
-              </span>
-            )}
-            {portfolio.is_featured && (
-              <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white text-sm font-semibold shadow-lg shadow-orange-500/25">
-                <Star className="w-4 h-4" />
-                Featured
-              </span>
-            )}
-          </motion.div>
-
-          {/* Title */}
-          <motion.h1
-            variants={itemVariants}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#1e3a5f] mb-6 max-w-4xl leading-tight">
-            {portfolio.title}
-          </motion.h1>
-
-          {/* Industry */}
-          {portfolio.industry && (
-            <motion.p
-              variants={itemVariants}
-              className="text-xl sm:text-2xl text-[#475569] mb-8 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#c2410c]" />
-              {portfolio.industry}
-            </motion.p>
-          )}
-
-          {/* Client */}
-          {portfolio.client && (
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+            {/* LEFT — project info */}
             <motion.div
-              variants={itemVariants}
-              className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#2d4a6f] flex items-center justify-center shadow-md">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className="text-[#64748b] text-sm">Client</p>
-                <p className="text-[#1e3a5f] font-semibold">{portfolio.client}</p>
-              </div>
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible">
+              <motion.div
+                variants={itemVariants}
+                className="flex flex-wrap gap-3 mb-6">
+                <span className="px-4 py-1.5 rounded-full bg-[#f97316]/10 text-sm text-[#c2410c] font-semibold">
+                  {portfolio.category}
+                </span>
+                {portfolio.year && (
+                  <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 text-sm text-[#475569]">
+                    <Calendar className="w-4 h-4" />
+                    {portfolio.year}
+                  </span>
+                )}
+                {portfolio.duration && (
+                  <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 text-sm text-[#475569]">
+                    <Clock className="w-4 h-4" />
+                    {portfolio.duration}
+                  </span>
+                )}
+                {portfolio.is_featured && (
+                  <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white text-sm font-semibold shadow-lg shadow-orange-500/25">
+                    <Star className="w-4 h-4" />
+                    Featured
+                  </span>
+                )}
+              </motion.div>
+
+              <motion.h1
+                variants={itemVariants}
+                className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#1e3a5f] mb-5 leading-[1.1]">
+                {portfolio.title}
+              </motion.h1>
+
+              {portfolio.industry && (
+                <motion.p
+                  variants={itemVariants}
+                  className="text-lg sm:text-xl text-[#475569] mb-8 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#c2410c]" />
+                  {portfolio.industry}
+                </motion.p>
+              )}
+
+              {portfolio.client && (
+                <motion.div
+                  variants={itemVariants}
+                  className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#2d4a6f] flex items-center justify-center shadow-md">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[#64748b] text-sm">Client</p>
+                    <p className="text-[#1e3a5f] font-semibold">
+                      {portfolio.client}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
-          )}
-        </motion.div>
 
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="w-6 h-10 rounded-full border-2 border-[#1e3a5f]/30 flex justify-center pt-2">
+            {/* RIGHT — hero screenshot */}
             <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="w-1.5 h-1.5 rounded-full bg-[#f97316]"
-            />
-          </motion.div>
+              initial={{ opacity: 0, scale: 0.96, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+              className="relative">
+              <div className="relative aspect-[16/10] rounded-3xl overflow-hidden bg-white shadow-2xl shadow-[#1e3a5f]/20 ring-1 ring-[#1e3a5f]/10">
+                {portfolio.thumbnail_url ? (
+                  <Image
+                    src={portfolio.thumbnail_url}
+                    alt={portfolio.title}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover"
+                    priority
+                  />
+                ) : (
+                  <div
+                    className={`w-full h-full bg-gradient-to-br ${getCategoryGradient(
+                      portfolio.category
+                    )} flex items-center justify-center`}>
+                    <span className="text-white text-7xl font-bold">
+                      {portfolio.title.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {/* soft floating accent behind the frame */}
+              <div className="absolute -bottom-5 -right-5 w-28 h-28 rounded-2xl bg-gradient-to-br from-[#f97316] to-[#ea580c] opacity-80 blur-2xl -z-10" />
+            </motion.div>
+          </div>
         </motion.div>
       </section>
 
@@ -884,7 +855,6 @@ export default function PortfolioDetailPage() {
       </section>
 
       <Footer />
-      </main>
-    </SceneProvider>
+    </main>
   );
 }
