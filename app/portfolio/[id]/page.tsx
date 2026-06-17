@@ -304,6 +304,7 @@ export default function PortfolioDetailPage() {
                     alt={portfolio.title}
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
+                    quality={90}
                     className="object-cover"
                     priority
                   />
@@ -424,11 +425,13 @@ export default function PortfolioDetailPage() {
                   <>
                     {portfolio.media[activeImage].type === "image" ? (
                       <Image
-                        width={100}
-                        height={100}
+                        key={portfolio.media[activeImage].url}
                         src={portfolio.media[activeImage].url}
                         alt={portfolio.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 55vw"
+                        quality={90}
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full">
@@ -447,34 +450,38 @@ export default function PortfolioDetailPage() {
                     {/* Image Navigation */}
                     {portfolio.media.length > 1 && (
                       <>
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 px-3 py-2 rounded-full bg-[#1e3a5f]/55 backdrop-blur-md ring-1 ring-white/15">
                           {portfolio.media.map((_, idx) => (
                             <motion.button
                               key={idx}
                               onClick={() => setActiveImage(idx)}
                               whileHover={{ scale: 1.2 }}
-                              className={`w-3 h-3 rounded-full transition-all ${
+                              aria-label={`Lihat gambar ${idx + 1}`}
+                              className={`h-2.5 rounded-full transition-all ${
                                 activeImage === idx
-                                  ? "bg-white scale-110"
-                                  : "bg-white/50"
+                                  ? "w-6 bg-[#f97316]"
+                                  : "w-2.5 bg-white/60 hover:bg-white"
                               }`}
                             />
                           ))}
                         </div>
 
-                        {/* Navigation Arrows */}
+                        {/* Navigation Arrows — dark backdrop so they stay
+                            visible over white-dominant screenshots. */}
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => paginate(-1)}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition-all">
+                          aria-label="Gambar sebelumnya"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#1e3a5f]/70 backdrop-blur-md ring-1 ring-white/20 shadow-lg flex items-center justify-center text-white hover:bg-[#1e3a5f] transition-all">
                           <ChevronLeft className="w-5 h-5" />
                         </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => paginate(1)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition-all">
+                          aria-label="Gambar berikutnya"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#1e3a5f]/70 backdrop-blur-md ring-1 ring-white/20 shadow-lg flex items-center justify-center text-white hover:bg-[#1e3a5f] transition-all">
                           <ChevronRight className="w-5 h-5" />
                         </motion.button>
                       </>
