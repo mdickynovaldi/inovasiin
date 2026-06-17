@@ -1,33 +1,16 @@
 "use client";
 
-import { Suspense, useRef } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Float, PresentationControls, RoundedBox, useTexture } from "@react-three/drei";
+import { Float, PresentationControls, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import { FrostedMaterial, AccentMaterial } from "../primitives/GlassObject";
 import { useParallax } from "../hooks/useParallax";
+import { useSafeTexture } from "../hooks/useSafeTexture";
 import { getSectionProgress, sceneStore, SECTION, BRAND } from "../sceneStore";
 
 const PANEL_W = 3.4;
 const PANEL_H = 2.1;
-
-/**
- * Textured thumbnail plane. Wrapped in its own component so drei's `useTexture`
- * (which suspends) can sit under a <Suspense fallback={null}> boundary without
- * stalling the rest of the scene.
- */
-function Thumbnail({ src }: { src: string }) {
-  const texture = useTexture(src, (tex) => {
-    const t = tex as THREE.Texture;
-    t.colorSpace = THREE.SRGBColorSpace;
-  });
-  return (
-    <mesh position={[0, 0, 0.02]}>
-      <planeGeometry args={[PANEL_W, PANEL_H]} />
-      <meshBasicMaterial map={texture} toneMapped={false} />
-    </mesh>
-  );
-}
 
 /**
  * Portfolio hero scene — a single glass-framed floating product shot. A
@@ -45,6 +28,7 @@ export default function PortfolioHeroScene({
 }) {
   const parallax = useParallax(0.1, 0.05);
   const content = useRef<THREE.Group>(null);
+  const texture = useSafeTexture(thumbnail);
 
   useFrame((_, delta) => {
     const group = content.current;
@@ -80,17 +64,15 @@ export default function PortfolioHeroScene({
               <AccentMaterial color={BRAND.navy} roughness={0.35} clearcoat={0.6} />
             </RoundedBox>
 
-            {/* Thumbnail image (or accent fallback when none is provided) */}
-            {thumbnail ? (
-              <Suspense fallback={null}>
-                <Thumbnail src={thumbnail} />
-              </Suspense>
-            ) : (
-              <mesh position={[0, 0, 0.02]}>
-                <planeGeometry args={[PANEL_W, PANEL_H]} />
+            {/* Thumbnail image (or accent fallback when none / failed to load) */}
+            <mesh position={[0, 0, 0.02]}>
+              <planeGeometry args={[PANEL_W, PANEL_H]} />
+              {texture ? (
+                <meshBasicMaterial map={texture} toneMapped={false} />
+              ) : (
                 <AccentMaterial color={accent} />
-              </mesh>
-            )}
+              )}
+            </mesh>
 
             {/* Frosted glass cover panel just in front for product-shot sheen */}
             <RoundedBox

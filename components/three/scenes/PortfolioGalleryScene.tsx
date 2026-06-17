@@ -1,16 +1,12 @@
 "use client";
 
-import { Suspense, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import {
-  PresentationControls,
-  RoundedBox,
-  Text,
-  useTexture,
-} from "@react-three/drei";
+import { PresentationControls, RoundedBox, Text } from "@react-three/drei";
 import * as THREE from "three";
 import { AccentMaterial } from "../primitives/GlassObject";
 import { useParallax } from "../hooks/useParallax";
+import { useSafeTexture } from "../hooks/useSafeTexture";
 import {
   getSectionProgress,
   getHover,
@@ -180,6 +176,7 @@ function Card({
   const group = useRef<THREE.Group>(null);
   const [pointerDown, setPointerDown] = useState(false);
   const hoverId = `portfolio-card-${item.id}`;
+  const texture = useSafeTexture(item.thumbnail);
 
   useFrame((_state, delta) => {
     const node = group.current;
@@ -238,31 +235,17 @@ function Card({
           />
         </RoundedBox>
 
-        {/* The card face. Textured cards get their own Suspense boundary. */}
-        {item.thumbnail ? (
-          <Suspense fallback={null}>
-            <ThumbnailFace url={item.thumbnail} />
-          </Suspense>
+        {/* Card face: thumbnail when it loads, otherwise the accent fallback. */}
+        {texture ? (
+          <mesh position={[0, 0, 0.001]}>
+            <planeGeometry args={[CARD_W, CARD_H]} />
+            <meshBasicMaterial map={texture} toneMapped={false} />
+          </mesh>
         ) : (
           <FallbackFace item={item} />
         )}
       </group>
     </group>
-  );
-}
-
-/** Textured front face. Uses MeshBasicMaterial with the map — no glass. */
-function ThumbnailFace({ url }: { url: string }) {
-  const texture = useTexture(url, (tex) => {
-    const t = tex as THREE.Texture;
-    t.colorSpace = THREE.SRGBColorSpace;
-  });
-
-  return (
-    <mesh position={[0, 0, 0.001]}>
-      <planeGeometry args={[CARD_W, CARD_H]} />
-      <meshBasicMaterial map={texture} toneMapped={false} />
-    </mesh>
   );
 }
 
