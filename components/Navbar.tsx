@@ -26,13 +26,11 @@ export default function Navbar() {
   const router = useRouter();
   // Detect all portfolio pages (list and detail)
   const isPortfolioPage = pathname?.startsWith("/portfolio");
-  const isPortfolioDetailPage = pathname?.startsWith("/portfolio/");
 
   useEffect(() => {
     const handleScroll = () => {
-      // Show navbar after scrolling past hero section (about 100vh or 300px minimum)
-      const scrollThreshold = isPortfolioPage ? 50 : Math.min(window.innerHeight * 0.5, 400);
-      setIsScrolled(window.scrollY > scrollThreshold);
+      // Navbar is always visible; this only toggles the solid/glass style.
+      setIsScrolled(window.scrollY > 24);
 
       // Update active section based on scroll position (only on home page)
       if (!isPortfolioPage) {
@@ -82,33 +80,17 @@ export default function Navbar() {
     }
   };
 
-  // Determine if we should use light (white) text - on portfolio pages with dark/gradient background and not scrolled
-  const useLightText = isPortfolioPage && !isScrolled;
-
-  // For portfolio detail pages, use a subtle glass background even when not scrolled for better readability
-  const useSubtleBackground = isPortfolioDetailPage && !isScrolled;
-
-  // Hide navbar on home page when at top
-  const isHidden = !isPortfolioPage && !isScrolled;
-
   return (
     <>
-      <motion.nav
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ 
-          y: isHidden ? -100 : 0, 
-          opacity: isHidden ? 0 : 1 
-        }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+      <nav
         className={cn(
+          // Always visible + consistent across every page; navy text on a light
+          // glass that solidifies once scrolled. No entrance transform so it can
+          // never get stuck off-screen.
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           isScrolled
             ? "glass-strong py-3 shadow-md"
-            : useSubtleBackground
-            ? "bg-black/10 backdrop-blur-md py-4 border-b border-white/10"
-            : isPortfolioPage
-            ? "bg-transparent py-5"
-            : "bg-transparent py-5"
+            : "bg-white/80 backdrop-blur-md py-5 border-b border-[#1e3a5f]/5"
         )}>
         <div className="container-custom flex items-center justify-between">
           {/* Logo */}
@@ -119,10 +101,7 @@ export default function Navbar() {
                 alt="INOVASIIN Logo"
                 width={300}
                 height={300}
-                className={cn(
-                  "h-10 sm:h-15 w-auto transition-all duration-300",
-                  useLightText && "brightness-0 invert"
-                )}
+                className="h-10 sm:h-15 w-auto transition-all duration-300"
                 priority
               />
             </motion.div>
@@ -145,8 +124,6 @@ export default function Navbar() {
                         "relative text-sm font-medium transition-colors cursor-pointer",
                         isActive
                           ? "text-[#c2410c]"
-                          : useLightText
-                          ? "text-white/70 hover:text-white"
                           : "text-[#1e3a5f]/70 hover:text-[#1e3a5f]"
                       )}
                       whileHover={{ y: -2 }}
@@ -177,8 +154,6 @@ export default function Navbar() {
                     "relative text-sm font-medium transition-colors",
                     isActive
                       ? "text-[#c2410c]"
-                      : useLightText
-                      ? "text-white/70 hover:text-white"
                       : "text-[#1e3a5f]/70 hover:text-[#1e3a5f]"
                   )}
                   whileHover={{ y: -2 }}
@@ -220,15 +195,12 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <motion.button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={cn(
-              "lg:hidden p-2 transition-colors",
-              useLightText ? "text-white" : "text-[#1e3a5f]"
-            )}
+            className="lg:hidden p-2 text-[#1e3a5f] transition-colors"
             whileTap={{ scale: 0.9 }}>
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </motion.button>
         </div>
-      </motion.nav>
+      </nav>
 
       {/* Mobile Menu */}
       <AnimatePresence>
