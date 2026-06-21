@@ -19,10 +19,18 @@ CREATE TABLE IF NOT EXISTS portfolios (
   challenge TEXT,
   solution TEXT,
   result TEXT,
+  project_url TEXT,        -- live website / game URL / Google Drive download
+  project_url_label TEXT,  -- optional CTA label, e.g. "Mainkan Game"
   is_featured BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- If the portfolios table already exists (existing project), run this once to
+-- add the project-link columns:
+ALTER TABLE portfolios
+  ADD COLUMN IF NOT EXISTS project_url TEXT,
+  ADD COLUMN IF NOT EXISTS project_url_label TEXT;
 
 -- 2. Create portfolio_media table
 CREATE TABLE IF NOT EXISTS portfolio_media (

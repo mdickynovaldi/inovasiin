@@ -289,6 +289,19 @@ export default function PortfolioDetailPage() {
                   </div>
                 </motion.div>
               )}
+
+              {portfolio.project_url && (
+                <motion.div variants={itemVariants} className="mt-8">
+                  <a
+                    href={portfolio.project_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white font-semibold shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all">
+                    {portfolio.project_url_label || "Kunjungi Project"}
+                    <ExternalLink className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </a>
+                </motion.div>
+              )}
             </motion.div>
 
             {/* RIGHT — hero screenshot */}

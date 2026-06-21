@@ -55,6 +55,8 @@ Responses are JSON: success is `{ "data": ... }`, errors are
   "challenge": "...",
   "solution": "...",
   "result": "...",
+  "project_url": "https://demo.example.com",  // live site / game URL / GDrive link; "" or null clears it
+  "project_url_label": "Mainkan Game",        // optional CTA label (defaults to "Kunjungi Project")
   "is_featured": true,
 
   // relations — optional. On UPDATE, any array you send REPLACES that relation.
@@ -101,6 +103,15 @@ curl -X PATCH http://localhost:3000/api/portfolios/<id> \
   -H "x-api-key: $PORTFOLIO_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "is_featured": false, "tags": ["WebXR", "LMS"] }'
+```
+
+Update (attach a live/game/download link shown on the detail page):
+
+```bash
+curl -X PATCH http://localhost:3000/api/portfolios/<id> \
+  -H "x-api-key: $PORTFOLIO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "project_url": "https://drive.google.com/file/d/…", "project_url_label": "Download Master File" }'
 ```
 
 Delete:

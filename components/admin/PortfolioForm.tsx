@@ -202,6 +202,12 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
   const [solution, setSolution] = useState(initialData?.solution || "");
   const [result, setResult] = useState(initialData?.result || "");
 
+  // Project link (live website / game URL / Google Drive download)
+  const [projectUrl, setProjectUrl] = useState(initialData?.project_url || "");
+  const [projectUrlLabel, setProjectUrlLabel] = useState(
+    initialData?.project_url_label || ""
+  );
+
   // Media
   const [mediaItems, setMediaItems] = useState<MediaItem[]>(
     initialData?.media?.map((m) => ({
@@ -369,6 +375,8 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
         challenge,
         solution,
         result,
+        project_url: projectUrl.trim() || null,
+        project_url_label: projectUrlLabel.trim() || null,
         is_featured: isFeatured,
       };
 
@@ -958,6 +966,42 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
                     onChange={(e) => setDuration(e.target.value)}
                     placeholder="e.g., 3 Bulan"
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[#1e3a5f] placeholder:text-[#1e3a5f]/40 focus:outline-none focus:ring-2 focus:ring-[#f97316]/30 focus:border-[#f97316]"
+                  />
+                </div>
+              </div>
+
+              {/* Project link — live website, game URL, or a download link
+                  (e.g. Google Drive master file). Shown as a CTA on the
+                  public detail page when filled. */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-2xl border border-[#f97316]/20 bg-[#f97316]/5 p-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-[#1e3a5f] mb-2">
+                    Link Project{" "}
+                    <span className="font-normal text-[#1e3a5f]/50">
+                      (website / game / Google Drive)
+                    </span>
+                  </label>
+                  <input
+                    type="url"
+                    value={projectUrl}
+                    onChange={(e) => setProjectUrl(e.target.value)}
+                    placeholder="https://… (URL produksi, game, atau link unduhan)"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[#1e3a5f] placeholder:text-[#1e3a5f]/40 focus:outline-none focus:ring-2 focus:ring-[#f97316]/30 focus:border-[#f97316]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#1e3a5f] mb-2">
+                    Label Tombol{" "}
+                    <span className="font-normal text-[#1e3a5f]/50">
+                      (opsional)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={projectUrlLabel}
+                    onChange={(e) => setProjectUrlLabel(e.target.value)}
+                    placeholder="mis. Mainkan Game"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[#1e3a5f] placeholder:text-[#1e3a5f]/40 focus:outline-none focus:ring-2 focus:ring-[#f97316]/30 focus:border-[#f97316]"
                   />
                 </div>
               </div>

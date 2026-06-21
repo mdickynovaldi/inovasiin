@@ -20,8 +20,12 @@ export class ApiError extends Error {
  *  managed by the DB and intentionally excluded. */
 const PORTFOLIO_FIELDS = [
   "title", "subtitle", "description", "thumbnail_url", "category", "industry",
-  "year", "client", "duration", "challenge", "solution", "result", "is_featured",
+  "year", "client", "duration", "challenge", "solution", "result",
+  "project_url", "project_url_label", "is_featured",
 ] as const;
+
+// Columns stored as NULL (not "") when empty.
+const NULLABLE = new Set<string>(["thumbnail_url", "project_url", "project_url_label"]);
 
 const str = (v: unknown): string => (v == null ? "" : String(v));
 
@@ -30,12 +34,12 @@ function pickColumns(body: any, partial: boolean): Record<string, unknown> {
   for (const f of PORTFOLIO_FIELDS) {
     if (f in body) {
       if (f === "is_featured") out[f] = Boolean(body[f]);
-      else if (f === "thumbnail_url") out[f] = body[f] == null || body[f] === "" ? null : String(body[f]);
+      else if (NULLABLE.has(f)) out[f] = body[f] == null || body[f] === "" ? null : String(body[f]);
       else out[f] = str(body[f]);
     } else if (!partial) {
       // create: fill missing optional columns with sensible defaults
       if (f === "is_featured") out[f] = false;
-      else if (f === "thumbnail_url") out[f] = null;
+      else if (NULLABLE.has(f)) out[f] = null;
       else out[f] = "";
     }
   }

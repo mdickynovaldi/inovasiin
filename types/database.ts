@@ -12,6 +12,10 @@ export interface Portfolio {
   challenge: string
   solution: string
   result: string
+  /** Live/production URL, game URL, or a download link (e.g. Google Drive). */
+  project_url: string | null
+  /** Optional button label, e.g. "Kunjungi Website" / "Mainkan Game". */
+  project_url_label: string | null
   is_featured: boolean
   created_at: string
   updated_at: string
